@@ -1,6 +1,7 @@
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const potrace = require('potrace');
 
 const FORMATOS_VALIDOS = {
@@ -9,19 +10,32 @@ const FORMATOS_VALIDOS = {
   svg:  { entrada: ['.jpg', '.jpeg', '.png'], salida: '.svg',  nombrar: 'SVG'  }
 };
 
-function trazarSVG(inputPath, options = {}) {
-  return new Promise((resolve, reject) => {
-    const params = {
-      threshold: potrace.THRESHOLD_AUTO,
-      turdSize: 2,
-      optCurve: true,
-      ...options
-    };
-    potrace.trace(inputPath, params, (err, svg) => {
-      if (err) reject(err);
-      else resolve(svg);
+async function trazarSVG(inputPath) {
+  const tmpFile = path.join(os.tmpdir(), `potrace-${Date.now()}-${Math.random().toString(36).slice(2)}.png`);
+
+  try {
+    await sharp(inputPath)
+      .grayscale()
+      .normalise()
+      .threshold(128)
+      .toFile(tmpFile);
+
+    const svg = await new Promise((resolve, reject) => {
+      potrace.trace(tmpFile, {
+        background: '#ffffff',
+        color: '#000000',
+        turdSize: 4,
+        optCurve: true
+      }, (err, svg) => {
+        if (err) reject(err);
+        else resolve(svg);
+      });
     });
-  });
+
+    return svg;
+  } finally {
+    fs.unlink(tmpFile, () => {});
+  }
 }
 
 async function convertirArchivo(inputPath, outputDir, options = {}) {
