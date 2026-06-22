@@ -1,3 +1,9 @@
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('fileInput');
 const results = document.getElementById('results');
@@ -94,14 +100,14 @@ function mostrarResultados(items) {
     if (item.error) {
       html += `<div class="result-card">
         <div class="result-info">
-          <div class="result-name">${item.archivo}</div>
-          <div class="result-error">${item.error === true ? 'Formato no valido' : item.error}</div>
+          <div class="result-name">${escapeHtml(item.archivo)}</div>
+          <div class="result-error">${item.error === true ? 'Formato no valido' : escapeHtml(item.error)}</div>
         </div>
       </div>`;
     } else {
       html += `<div class="result-card">
         <div class="result-info">
-          <div class="result-name">${item.archivo}</div>
+          <div class="result-name">${escapeHtml(item.archivo)}</div>
           <div class="result-sizes">
             ${item.originalKB} KB → ${item.finalKB} KB
             <span class="saved">(${item.ahorro}% menos)</span>

@@ -9,6 +9,12 @@ const { convertirArchivo, convertirMultiples } = require('./convert');
 const app = express();
 const PORT = 8012;
 const MAX_TOTAL_MB = 500;
+const ES_PROD = process.env.NODE_ENV === 'production';
+
+function mensajeError(err) {
+  if (ES_PROD) return 'Error interno al procesar la imagen';
+  return err.message;
+}
 
 const uploadsDir = path.join(__dirname, 'uploads');
 const outputsDir = path.join(__dirname, 'outputs');
@@ -62,6 +68,10 @@ app.post('/convertir', upload.single('imagen'), async (req, res) => {
     limpiarOutputs();
 
     const to = (req.query.to || 'webp').toLowerCase();
+    if (!['webp', 'png'].includes(to)) {
+      return res.status(400).json({ error: 'Formato de destino invalido. Use webp o png.' });
+    }
+
     const resultado = await convertirArchivo(req.file.path, outputsDir, { to });
 
     fs.unlink(req.file.path, () => {});
@@ -72,7 +82,7 @@ app.post('/convertir', upload.single('imagen'), async (req, res) => {
     });
   } catch (err) {
     if (req.file) fs.unlink(req.file.path, () => {});
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: mensajeError(err) });
   }
 });
 
@@ -93,6 +103,9 @@ app.post('/convertir-multiple', upload.array('imagenes', 50), async (req, res) =
     limpiarOutputs();
 
     const to = (req.query.to || 'webp').toLowerCase();
+    if (!['webp', 'png'].includes(to)) {
+      return res.status(400).json({ error: 'Formato de destino invalido. Use webp o png.' });
+    }
     const toProcess = req.files.map(f => ({ file: f, to }));
 
     const rawResults = await convertirMultiples(toProcess, async ({ file, to }) => {
@@ -114,7 +127,7 @@ app.post('/convertir-multiple', upload.array('imagenes', 50), async (req, res) =
     res.json({ resultados });
   } catch (err) {
     if (req.files) req.files.forEach(f => fs.unlink(f.path, () => {}));
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: mensajeError(err) });
   }
 });
 
