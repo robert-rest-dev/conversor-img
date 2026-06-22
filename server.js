@@ -35,7 +35,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   fileFilter: (_req, file, cb) => {
-    const ok = ['.jpg', '.jpeg', '.png', '.webp'].includes(
+    const ok = ['.jpg', '.jpeg', '.png', '.webp', '.svg'].includes(
       path.extname(file.originalname).toLowerCase()
     );
     cb(ok ? null : new Error('Formato no soportado'), ok);
@@ -68,8 +68,8 @@ app.post('/convertir', upload.single('imagen'), async (req, res) => {
     limpiarOutputs();
 
     const to = (req.query.to || 'webp').toLowerCase();
-    if (!['webp', 'png'].includes(to)) {
-      return res.status(400).json({ error: 'Formato de destino invalido. Use webp o png.' });
+    if (!['webp', 'png', 'svg'].includes(to)) {
+      return res.status(400).json({ error: 'Formato de destino invalido. Use webp, png o svg.' });
     }
 
     const resultado = await convertirArchivo(req.file.path, outputsDir, { to });
@@ -103,8 +103,8 @@ app.post('/convertir-multiple', upload.array('imagenes', 50), async (req, res) =
     limpiarOutputs();
 
     const to = (req.query.to || 'webp').toLowerCase();
-    if (!['webp', 'png'].includes(to)) {
-      return res.status(400).json({ error: 'Formato de destino invalido. Use webp o png.' });
+    if (!['webp', 'png', 'svg'].includes(to)) {
+      return res.status(400).json({ error: 'Formato de destino invalido. Use webp, png o svg.' });
     }
     const toProcess = req.files.map(f => ({ file: f, to }));
 
@@ -134,7 +134,7 @@ app.post('/convertir-multiple', upload.array('imagenes', 50), async (req, res) =
 app.get('/descargar-todo', (req, res) => {
   const files = fs.readdirSync(outputsDir).filter(f => {
     const ext = path.extname(f).toLowerCase();
-    return ['.webp', '.png'].includes(ext);
+    return ['.webp', '.png', '.svg'].includes(ext);
   });
 
   if (files.length === 0) {

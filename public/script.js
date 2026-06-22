@@ -16,7 +16,8 @@ lucide.createIcons();
 
 const FORMATOS_POR_MODO = {
   webp: ['.jpg', '.jpeg', '.png'],
-  png: ['.jpg', '.jpeg', '.webp']
+  png: ['.jpg', '.jpeg', '.webp'],
+  svg: ['.jpg', '.jpeg', '.png']
 };
 
 modeBtns.forEach(btn => {

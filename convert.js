@@ -1,11 +1,28 @@
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
+const potrace = require('potrace');
 
 const FORMATOS_VALIDOS = {
   webp: { entrada: ['.jpg', '.jpeg', '.png'], salida: '.webp', nombrar: 'WebP' },
-  png:  { entrada: ['.jpg', '.jpeg', '.webp'], salida: '.png',  nombrar: 'PNG'  }
+  png:  { entrada: ['.jpg', '.jpeg', '.webp'], salida: '.png',  nombrar: 'PNG'  },
+  svg:  { entrada: ['.jpg', '.jpeg', '.png'], salida: '.svg',  nombrar: 'SVG'  }
 };
+
+function trazarSVG(inputPath, options = {}) {
+  return new Promise((resolve, reject) => {
+    const params = {
+      threshold: potrace.THRESHOLD_AUTO,
+      turdSize: 2,
+      optCurve: true,
+      ...options
+    };
+    potrace.trace(inputPath, params, (err, svg) => {
+      if (err) reject(err);
+      else resolve(svg);
+    });
+  });
+}
 
 async function convertirArchivo(inputPath, outputDir, options = {}) {
   const to = (options.to || 'webp').toLowerCase();
@@ -24,12 +41,16 @@ async function convertirArchivo(inputPath, outputDir, options = {}) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  const pipeline = sharp(inputPath);
-
-  if (to === 'webp') {
-    await pipeline.webp({ quality: 85, effort: 6 }).toFile(outputPath);
+  if (to === 'svg') {
+    const svg = await trazarSVG(inputPath);
+    fs.writeFileSync(outputPath, svg);
   } else {
-    await pipeline.png().toFile(outputPath);
+    const pipeline = sharp(inputPath);
+    if (to === 'webp') {
+      await pipeline.webp({ quality: 85, effort: 6 }).toFile(outputPath);
+    } else {
+      await pipeline.png().toFile(outputPath);
+    }
   }
 
   const originalBytes = fs.statSync(inputPath).size;
