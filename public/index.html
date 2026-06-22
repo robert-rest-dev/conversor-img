@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conversor de Imagenes</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Conversor de Imagenes</h1>
+      <p>Arrastra imagenes o haz clic para seleccionar. Soporta JPG, PNG y WebP.</p>
+    </header>
+
+    <div class="mode-selector">
+      <button class="mode-btn active" data-mode="webp">
+        <i data-lucide="image"></i>
+        <span>A WebP</span>
+      </button>
+      <button class="mode-btn" data-mode="png">
+        <i data-lucide="file-image"></i>
+        <span>A PNG</span>
+      </button>
+    </div>
+
+    <div class="dropzone" id="dropzone">
+      <div class="dropzone-content">
+        <i data-lucide="upload" class="upload-icon"></i>
+        <p class="dropzone-text" id="dropzoneText">Arrastra tus imagenes aqui</p>
+        <p class="dropzone-sub">o haz clic para seleccionar archivos</p>
+      </div>
+      <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp" multiple hidden>
+    </div>
+
+    <div id="results" class="results hidden">
+      <div class="result-actions" id="resultActions">
+        <a class="btn-zip" id="btnZip" href="/descargar-todo">
+          <i data-lucide="file-archive"></i>
+          Descargar todo en ZIP
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
